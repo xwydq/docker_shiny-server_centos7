@@ -32,7 +32,7 @@ ENV LANG=zh_CN.UTF-8 \
 WORKDIR /home/root
 RUN yum install -y R
 
-RUN R -e "install.packages(c('shiny', 'rmarkdown', 'devtools', 'RJDBC', 'dplyr', 'plotly', 'RPostgreSQL', 'lubridate', 'DT', 'shinydashboard', 'shinyWidgets', 'readr', 'RMySQL', 'stringr', 'reshape2', 'xts', 'htmlwidgets', 'tools', 'digest', 'scales', 'ggplot2', 'shinyjs', 'shinyBS', 'forecast'), repos='https://mirrors.tongji.edu.cn/CRAN/')"
+RUN R -e "install.packages(c('shiny', 'rmarkdown', 'devtools', 'RJDBC', 'dplyr', 'plotly', 'RPostgreSQL', 'lubridate', 'DT', 'shinydashboard', 'shinyWidgets', 'readr', 'RMySQL', 'stringr', 'reshape2', 'xts', 'htmlwidgets', 'digest', 'scales', 'ggplot2', 'shinyjs', 'shinyBS', 'forecast'), repos='https://mirrors.tongji.edu.cn/CRAN/')"
 
 
 
@@ -66,11 +66,11 @@ RUN mkdir -p /var/log/supervisor \
 
 
 COPY entrypoint.sh /entrypoint.sh
-COPY shiny-server.conf /etc/shiny-server/shiny-server.conf
+#COPY shiny-server.conf /etc/shiny-server/shiny-server.conf
 
 RUN chmod +x /entrypoint.sh
 
 EXPOSE 8787 3838
 
-ENTRYPOINT ["/entrypoint.sh"]
+# ENTRYPOINT ["/entrypoint.sh"]
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"] 
