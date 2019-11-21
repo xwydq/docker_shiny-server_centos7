@@ -67,6 +67,9 @@ RUN mkdir -p /var/log/supervisor \
 
 COPY entrypoint.sh /entrypoint.sh
 COPY shiny-server.conf /etc/shiny-server/shiny-server.conf
+
+RUN chmod +x /entrypoint.sh
+
 EXPOSE 8787 3838
 
 ENTRYPOINT ["/entrypoint.sh"]
