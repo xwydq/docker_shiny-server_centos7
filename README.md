@@ -58,7 +58,8 @@ docker run -p 3838:3838 -p 8787:8787 -d shiny-server
 ### Run your Shiny-Server Docker image with shiny app.
 
 ```
-docker run -p 7000:3838 -v hello_app /srv/shiny-server/hello_app -d shiny-server
+docker pull xwydq/rstudio-shiny-server
+docker run --name zlj_shiny -p 7022:3838 -p 8786:8787 -v $(pwd)/hello_app/:/srv/shiny-server/hello_app xwydq/rstudio-shiny-server -d shiny-server
 ```
 
 * Shiny-Server is running at localhost:7000/hello_app
