@@ -1,58 +1,73 @@
-FROM centos:centos7
-MAINTAINER kris eberwein
+FROM centos:7.6.1810
+MAINTAINER xuwy
 
-RUN yum -y install epel-release
-RUN yum update -y
-RUN yum upgrade -y
-RUN yum clean all -y
-# RUN yum reinstall -y glibc-common
-RUN yum install -y locales java-1.7.0-openjdk-devel tar wget
+    
+COPY shiny-server-1.5.12.933-x86_64.rpm /shiny-server-1.5.12.933-x86_64.rpm
+COPY rstudio-server-rhel-1.2.5001-x86_64.rpm /rstudio-server-rhel-1.2.5001-x86_64.rpm
+COPY CentOS-Base.repo /etc/yum.repos.d/
+    
 
-# R devtools pre-requisites:
-RUN yum install -y git xml2 libxml2-devel curl curl-devel openssl-devel pandoc
-# Plotly needs libcurl
-RUN yum install libcurl-devel -y
+RUN set -ex \
+    # 预安装所需组件
+    && echo "nameserver 144.144.144.144" >> /etc/resolv.conf \
+    && yum -y install epel-release \
+    && yum update -y \
+    && yum upgrade -y \
+    && yum -y install kde-l10n-Chinese telnet \
+    && yum reinstall -y glibc-common \
+    && rm -rf /tmp/* \
+    && rm -rf /var/cache/yum/* \
+    && yum clean all -y \
+    && localedef -c -f UTF-8 -i zh_CN zh_CN.UTF-8 \
+    && ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
+    && yum install -y wget tar libffi-devel zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gcc make initscripts \
+    && yum install -y mysql-devel postgresql-devel libsasl2-devel gcc-c++ libaio git xml2 libxml2-devel curl curl-devel pandoc \
+    && yum install -y locales java-1.8.0-openjdk java-1.8.0-openjdk-devel libcurl-devel \
+    && yum install -y openssl098e supervisor passwd
 
+ENV LANG=zh_CN.UTF-8 \
+    LANGUAGE=zh_CN:zh \
+    LC_ALL=zh_CN.UTF-8
+    
 WORKDIR /home/root
 RUN yum install -y R
 
-RUN R -e "install.packages(c('shiny', 'rmarkdown', 'devtools', 'RJDBC', 'dplyr', 'plotly', 'RPostgreSQL', 'lubridate', 'DT'), repos='http://cran.r-project.org', INSTALL_opts='--no-html')"
+RUN R -e "install.packages(c('shiny', 'rmarkdown', 'devtools', 'RJDBC', 'dplyr', 'plotly', 'RPostgreSQL', 'lubridate', 'DT', 'shinydashboard', 'shinyWidgets', 'readr', 'RMySQL', 'stringr', 'reshape2', 'xts', 'htmlwidgets', 'tools', 'digest', 'scales', 'ggplot2', 'shinyjs', 'shinyBS', 'forecast'), repos='https://mirrors.tongji.edu.cn/CRAN/')"
+
+
 
 #-----------------------
-
-# Add RStudio binaries to PATH
-# export PATH="/usr/lib/rstudio-server/bin/:$PATH"
-ENV PATH /usr/lib/rstudio-server/bin/:$PATH 
-ENV LANG en_US.UTF-8
-
-RUN yum install -y openssl098e supervisor passwd pandoc
-
 # Install Rstudio server:
-RUN wget https://download2.rstudio.org/server/centos6/x86_64/rstudio-server-rhel-1.2.1335-x86_64.rpm
-RUN yum -y install --nogpgcheck rstudio-server-rhel-1.2.1335-x86_64.rpm \
-	&& rm -rf rstudio-server-rhel-1.2.1335-x86_64.rpm
+RUN yum -y install --nogpgcheck /rstudio-server-rhel-1.2.5001-x86_64.rpm \
+	&& rm -rf /rstudio-server-rhel-1.2.5001-x86_64.rpm
 
 RUN groupadd rstudio \
 	&& useradd -g rstudio rstudio \
-	&& echo rstudio | passwd rstudio --stdin
+	&& echo isyscore | passwd rstudio --stdin
+	
+# Add RStudio binaries to PATH
+# export PATH="/usr/lib/rstudio-server/bin/:$PATH"
+#ENV PATH /usr/lib/rstudio-server/bin/:$PATH 
+#ENV LANG zh_CN.UTF-8
 
-RUN wget https://download3.rstudio.org/centos6.3/x86_64/shiny-server-1.5.9.923-x86_64.rpm
-RUN yum -y install --nogpgcheck shiny-server-1.5.9.923-x86_64.rpm \
-	&& rm -rf shiny-server-1.5.9.923-x86_64.rpm
+#-----------------------
+# Install Shiny server:
+RUN yum -y install --nogpgcheck /shiny-server-1.5.12.933-x86_64.rpm \
+	&& rm -rf /shiny-server-1.5.12.933-x86_64.rpm
 
 RUN mkdir -p /var/log/shiny-server \
 	&& chown shiny:shiny /var/log/shiny-server \
 	&& chown shiny:shiny -R /srv/shiny-server \
-	&& chmod 755 -R /srv/shiny-server \
-	&& chown shiny:shiny -R /opt/shiny-server/samples/sample-apps \
-	&& chmod 755 -R /opt/shiny-server/samples/sample-apps 
+	&& chmod 755 -R /srv/shiny-server
 
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 RUN mkdir -p /var/log/supervisor \
 	&& chmod 755 -R /var/log/supervisor
 
 
+COPY entrypoint.sh /entrypoint.sh
+COPY shiny-server.conf /etc/shiny-server/shiny-server.conf
 EXPOSE 8787 3838
 
-
+ENTRYPOINT ["/entrypoint.sh"]
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"] 

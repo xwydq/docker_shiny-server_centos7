@@ -18,6 +18,12 @@ The Docker Hub has a similar instance of Shiny-Server called [Rocker](https://hu
 
 * DT
 
+### Install other R packages with `entrypoint.sh`
+
+```
+R -e "install.packages(c('shiny'), repos='https://mirrors.tongji.edu.cn/CRAN/')"
+```
+
 # Setup
 
 1. Install [Docker](https://docs.docker.com/engine/installation/) on your system.
@@ -46,7 +52,21 @@ docker run -p 3838:3838 -p 8787:8787 -d shiny-server
 
 * RStudio Server is running at localhost:8787
 
-* The username and password for RStudio Server is `rstudio`.
+* The username and password for RStudio Server is `rstudio/isyscore`.
+
+
+### Run your Shiny-Server Docker image with shiny app.
+
+```
+docker run -p 7000:3838 -v hello_app /srv/shiny-server/hello_app -d shiny-server
+```
+
+* Shiny-Server is running at localhost:7000/hello_app
+
+
+
+
+
 
 # Modify the Docker Container
 
