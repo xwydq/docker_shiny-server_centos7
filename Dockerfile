@@ -66,11 +66,12 @@ RUN mkdir -p /var/log/supervisor \
 
 
 COPY entrypoint.sh /entrypoint.sh
-#COPY shiny-server.conf /etc/shiny-server/shiny-server.conf
+COPY shiny-server.conf /etc/shiny-server/shiny-server.conf
 
 RUN chmod +x /entrypoint.sh
 
 EXPOSE 8787 3838
 
-# ENTRYPOINT ["/entrypoint.sh"]
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"] 
+ENTRYPOINT ["/entrypoint.sh"]
+## CMD Exited whth ENTRYPOINT
+# CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"] 

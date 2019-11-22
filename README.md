@@ -1,6 +1,4 @@
-### Docker Configuration for Shiny-Server and RStudio Server on CentOS7
-
-The Docker Hub has a similar instance of Shiny-Server called [Rocker](https://hub.docker.com/r/rocker/shiny/), which runs on a Debian instance. However, many organizations prefer to run production servers on CentOS. This work uses CentOS 7. There is also a [similar container](https://github.com/smartinsightsfromdata/Docker-for-shiny-server-free-edition-on-centos) based on CentOS 6.7, which was the inspiration for this container. 
+### Docker Configuration for Shiny-Server and RStudio Server on CentOS7.6
 
 ### This configuration includes:
 
@@ -10,13 +8,19 @@ The Docker Hub has a similar instance of Shiny-Server called [Rocker](https://hu
 
 * Shiny-Server
 
-### Additional R Packages include:
+### Additional key R Packages include:
 
-* tidyverse
+* tidyverse readr RMySQL stringr reshape2
 
-* plotly
+* plotly ggplot2
 
 * DT
+
+* lubridate xts forecast
+
+* shinydashboard htmlwidgets shinyjs shinyBS shinyWidgets
+
+
 
 ### Install other R packages with `entrypoint.sh`
 
@@ -61,12 +65,28 @@ docker run -p 3838:3838 -p 8787:8787 -d shiny-server
 docker pull xwydq/rstudio-shiny-server
 docker run --name zlj_shiny -p 7022:3838 -p 8786:8787 -v $(pwd)/hello_app/:/srv/shiny-server/hello_app xwydq/rstudio-shiny-server -d shiny-server
 ```
+* Shiny-Server is running at localhost:7022, view hello_app url http://localhost:7022/hello_app
 
-* Shiny-Server is running at localhost:7000/hello_app
+### Volumn rstudio project dir to local
 
+```
+mkdir -p $(pwd)/rstudio_project
+chmod 777 $(pwd)/rstudio_project
+docker run --name zlj_shiny -p 7022:3838 -p 8786:8787 -v $(pwd)/rstudio_project/:/home/rstudio/project xwydq/rstudio-shiny-server -d shiny-server
+```
 
+### docker container manage
 
-
+```
+# start 
+docker container start <container ID>
+# stop
+docker container stop <container ID>
+# delete
+docker container rm -f <container ID>
+# logs
+docker logs <container ID>
+```
 
 
 # Modify the Docker Container
